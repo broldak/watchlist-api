@@ -1,12 +1,12 @@
 const express = require('express');
 const imdb = require('imdb-api');
 const apiKey = 'd634d874';
-const timeout = 10000;
+const timeout = 4000;
 
 const app = express();
 
 app.get('/movies', function(req, res) {
-  imdb.search({ title: 'Green'}, { apiKey }).then((val) => {
+  imdb.search({ title: req.query.q, reqtype: 'movie' }, { apiKey }).then((val) => {
     val.id = val.imdbid;
 
     const { results } = val;
