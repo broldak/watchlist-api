@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 module.exports = mongoose.model('User', new Schema({
-  name: String,
+  first_name: String,
+  last_name: String,
+  email: String,
   password: String,
-  admin: Boolean
+  movies: [{watched: Boolean, _movie: { type: Schema.Types.ObjectId, ref: 'Movie' }}]
 }));
