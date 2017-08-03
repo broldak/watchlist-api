@@ -38,53 +38,53 @@ app.use(morgan('dev'));
 // });
 
 // TODO: use email + password not name
-// app.post('/authenticate', function(req, res) {
-//   console.log(req.body);
-//
-//   User.findOne({
-//     name: req.body.name
-//   }, function(err, user) {
-//     if (err) throw err;
-//
-//     if (!user) {
-//       res.json({ success: false, message: 'Auth failed' });
-//     } else if (user) {
-//       if (user.password != req.body.password) {
-//         res.json({ success: false, message: 'Auth failed' });
-//       } else {
-//         const token = jwt.sign(user, app.get('superSecret'), {
-//           expiresIn: 1440
-//         });
-//
-//         res.json({
-//           success: true,
-//           message: 'TOKEN',
-//           token
-//         });
-//       }
-//     }
-//   })
-// });
+app.post('/authenticate', function(req, res) {
+  console.log(req.body);
 
-// app.use(function(req, res, next) {
-//   const token = req.body.token || req.query.token || req.headers['x-access-token'];
-//
-//   if (token) {
-//     jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-//       if (err) {
-//         return res.json({ success: false, message: 'Auth failed' });
-//       } else {
-//         req.decoded = decoded;
-//         next();
-//       }
-//     });
-//   } else {
-//     return res.status(403).send({
-//       success: false,
-//       message: 'no token'
-//     });
-//   }
-// });
+  User.findOne({
+    email: req.body.auth.email
+  }, function(err, user) {
+    if (err) throw err;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: 'Auth failed' });
+    } else if (user) {
+      if (user.password != req.body.auth.password) {
+        res.status(401).json({ success: false, message: 'Auth failed' });
+      } else {
+        const token = jwt.sign(user, app.get('superSecret'), {
+          expiresIn: 1440
+        });
+
+        res.json({
+          success: true,
+          message: 'TOKEN',
+          token
+        });
+      }
+    }
+  })
+});
+
+app.use(function(req, res, next) {
+  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+  if (token) {
+    jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+      if (err) {
+        return res.json({ success: false, message: 'Auth failed' });
+      } else {
+        req.decoded = decoded;
+        next();
+      }
+    });
+  } else {
+    return res.status(403).send({
+      success: false,
+      message: 'no token'
+    });
+  }
+});
 
 app.get('/movies', function(req, res) {
   imdb.search({ title: req.query.q, reqtype: 'movie' }, { apiKey }).then((val) => {
