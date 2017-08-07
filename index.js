@@ -39,7 +39,7 @@ app.use(morgan('dev'));
 
 // TODO: use email + password not name
 app.post('/authenticate', function(req, res) {
-  console.log(req.body);
+  // console.log(req.body);
 
   User.findOne({
     email: req.body.auth.email
@@ -59,7 +59,8 @@ app.post('/authenticate', function(req, res) {
         res.json({
           success: true,
           message: 'TOKEN',
-          token
+          token,
+          user_id: user.id
         });
       }
     }
@@ -86,6 +87,21 @@ app.use(function(req, res, next) {
   }
 });
 
+app.get('/users/:id', function(req, res) {
+  req.decoded._doc.type = 'user';
+  req.decoded._doc.id = req.decoded._doc._id;
+
+  const { first_name, id, last_name, movies } = req.decoded._doc;
+
+  const attributes = {
+    'first-name': first_name,
+    'last-name': last_name,
+    movies
+  };
+
+  res.send({ data: {id, type: 'user', attributes }});
+});
+
 app.get('/movies', function(req, res) {
   imdb.search({ title: req.query.q, reqtype: 'movie' }, { apiKey }).then((val) => {
     val.id = val.imdbid;
@@ -108,7 +124,7 @@ app.get('/movies', function(req, res) {
       delete result.imdbid;
     });
 
-    console.log(results);
+    // console.log(results);
 
     res.send({
       data: results
@@ -149,8 +165,8 @@ app.post('/movies/add', function(req, res) {
         _movie: movie
       }
     }}, function(err, doc) {
-      console.log('err ' + err);
-      console.log('doc ' + doc);
+      // console.log('err ' + err);
+      // console.log('doc ' + doc);
     });
   });
 
@@ -160,8 +176,8 @@ app.post('/movies/add', function(req, res) {
 app.get('/me/movies', function(req, res) {
   const user = User.findOne({_id: tempUserId})
                    .populate('movies._movie').exec(function(err, user) {
-                     console.log('err ' + err);
-                     console.log('movies ' + user.movies[0]._movie);
+                    //  console.log('err ' + err);
+                    //  console.log('movies ' + user.movies[0]._movie);
 
                      res.json({
                        data: user.movies
